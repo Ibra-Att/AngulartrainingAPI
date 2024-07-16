@@ -9,5 +9,6 @@ namespace AngulartrainingAPI.DTO.Order
         public float TotalPrice { get; set; }
         public OrderStatus Status { get; set; }
         public int UserId { get; set; }
+        public DateTime CreationDate { get; set; }
     }
 }

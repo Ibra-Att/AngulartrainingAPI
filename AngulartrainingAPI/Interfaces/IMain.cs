@@ -7,8 +7,8 @@ namespace AngulartrainingAPI.Interfaces
 {
     public interface IMain
     {
-        //user
-        Task UpdateUserProfile(UpdateUserDTO dto);
+        ////user
+        //Task UpdateUserProfile(UpdateUserDTO dto);
 
 
         //product
