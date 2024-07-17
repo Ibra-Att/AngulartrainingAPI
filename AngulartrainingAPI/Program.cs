@@ -1,5 +1,6 @@
 using AngulartrainingAPI.DataContext;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.FileProviders;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -20,6 +21,15 @@ if (app.Environment.IsDevelopment())
     app.UseSwagger();
     app.UseSwaggerUI();
 }
+
+var imagesDirectory = Path.Combine(Directory.GetCurrentDirectory(), "Images");
+Directory.CreateDirectory(imagesDirectory);//create the directory if not existed
+
+app.UseStaticFiles(new StaticFileOptions
+{
+    FileProvider = new PhysicalFileProvider(imagesDirectory),
+    RequestPath = "/Images"
+});
 
 app.UseHttpsRedirection();
 
