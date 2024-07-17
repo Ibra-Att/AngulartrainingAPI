@@ -59,7 +59,7 @@ namespace AngulartrainingAPI.Controllers
 
         [HttpGet]
         [Route("[action]/{id}")]
-        public async Task<IActionResult> GetProductById([FromRoute]int id)
+        public async Task<IActionResult> GetProductById([FromRoute] int id)
         {
             try
             {
@@ -74,7 +74,7 @@ namespace AngulartrainingAPI.Controllers
                                 Description = p.Description,
                                 CreationDate = DateTime.Now,
                             };
-                
+
                 var result = await query.SingleOrDefaultAsync();
                 if (result != null)
                     return Ok(result);
@@ -91,7 +91,7 @@ namespace AngulartrainingAPI.Controllers
         [HttpPut]
         [Route("[action]")]
         public async Task<IActionResult> UpdateProduct(UpdateProduct dto)
-        {        
+        {
 
             try
             {
@@ -113,7 +113,7 @@ namespace AngulartrainingAPI.Controllers
             }
             catch (Exception ex)
             {
-              
+
                 return StatusCode(500, $"Something went wrong{ex.Message}");
             }
         }
@@ -147,13 +147,15 @@ namespace AngulartrainingAPI.Controllers
 
         //Order
 
-     
+
 
         [HttpGet]
         [Route("[action]")]
-        public async Task<IActionResult> GetAllOrders()
+        public async Task<IActionResult> GetAllOrders([FromHeader] string token)
         {
             try {
+                if (TokenHelper.IsValidToken(token))
+                    { 
                 var query = from o in _context.Orders
                             join op in _context.ProductsProducts
                             on o.Id equals op.Id
@@ -161,14 +163,17 @@ namespace AngulartrainingAPI.Controllers
                             select new OrderCardDTO
                             {
                                 Id = o.Id,
-                                TotalPrice = _context.ProductsProducts.Where(ord => ord.OrderId == o.Id).Sum(x=>x.Quantity * x.ProductPrice),
+                                TotalPrice = _context.ProductsProducts.Where(ord => ord.OrderId == o.Id).Sum(x => x.Quantity * x.ProductPrice),
                                 UserId = o.UserId,
-                                Status = o.Status,                                
+                                Status = o.Status,
                             };
-                var result= await query.ToListAsync();
+        var result = await query.ToListAsync();
                 return Ok(result);
+    }
+    else { return Unauthorized();
+}
 
-            }
+}
             catch (Exception ex)
             {
                 return StatusCode(500, $"Something went wrong{ex.Message}");
@@ -177,33 +182,49 @@ namespace AngulartrainingAPI.Controllers
 
         [HttpGet]
         [Route("[action]/{id}")]
-        public async Task<IActionResult> GetOrderById([FromRoute] int id)
+        public async Task<IActionResult> GetOrderById([FromRoute] int id, [FromHeader] string token)
         {
             try
             {
-                var query = from o in _context.Orders
-                            join op in _context.ProductsProducts
-                            on o.Id equals op.Id
-                            where o.Id == id
-                            select new OrderDetailDTO
-                            {
-                                Note = o.Note,
-                                Status = o.Status,
-                                UserId = o.UserId,
-                                TotalPrice = _context.ProductsProducts.Where(ord => ord.OrderId == o.Id).Sum(x => x.Quantity * x.ProductPrice),
-                                //ListOfItems=
-                                CreationDate = o.CreationDate,
-                                
-                                
-                            };
+                if (TokenHelper.IsValidToken(token))
+                {
+                    var query2 = from oP in _context.ProductsProducts
+                                 join p in _context.Products
+                                 on oP.ProductId equals p.Id
+                                 where oP.OrderId == id
+                                 select new ProductInfoDTO
+                                 {
+                                     ProductId = oP.ProductId,
+                                     ProductName = p.Name,
+                                     Quentity = oP.Quantity,
+                                     ProductImage = p.ProductImage,
+                                     UnitPrice = p.Price
 
-                var order = await query.SingleOrDefaultAsync();
-                //var query2= from oP in _context.ProductsProducts
-                //            join p in _context.Products
-                //            on oP.ProductId equals p.Id
-                //            where oP.OrderId==id
+                                 };
+                    var result = await query2.ToListAsync();
+                    var query = from o in _context.Orders
+                                join op in _context.ProductsProducts
+                                on o.Id equals op.Id
+                                where o.Id == id
+                                select new OrderDetailDTO
+                                {
+                                    Id = o.Id,
+                                    Note = o.Note,
+                                    Status = o.Status,
+                                    UserId = o.UserId,
+                                    TotalPrice = _context.ProductsProducts.Where(ord => ord.OrderId == o.Id).Sum(x => x.Quantity * x.ProductPrice),
+                                    ListOfItems = result,
+                                    CreationDate = o.CreationDate,
 
-                return Ok(order);
+
+                                };
+
+                    var order = await query.SingleOrDefaultAsync();
+
+
+                    return Ok(order);
+                }
+                else { return Unauthorized(); }
             }
 
             catch (Exception ex)
