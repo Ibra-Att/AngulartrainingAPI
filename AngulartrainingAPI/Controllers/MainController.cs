@@ -68,6 +68,7 @@ namespace AngulartrainingAPI.Controllers
                             where p.Id == id
                             select new ProductDetailDTO
                             {
+                                Id=p.Id,
                                 Name = p.Name,
                                 Price = p.Price,
                                 ProductImage = p.ProductImage,

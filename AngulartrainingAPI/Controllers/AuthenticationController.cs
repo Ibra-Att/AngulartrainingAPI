@@ -42,7 +42,19 @@ namespace AngulartrainingAPI.Controllers
                     user.ISLoggedin = true;
                     _context.Update(user);
                     await _context.SaveChangesAsync();
-                    return StatusCode(200, token);
+
+
+                    var response = new LoginResponseDTO
+                    {
+                        Token = token,
+                        Id=user.Id,
+                        UserName = user.FullName,
+                        Email= user.Email,
+                        
+                    };
+
+
+                    return Ok(response);
                 }
                 throw new Exception("wrong email or password");
             }

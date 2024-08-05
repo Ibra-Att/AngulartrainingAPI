@@ -13,6 +13,17 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.AddDbContext<MyDbContext>(cnn => cnn.UseSqlServer(builder.Configuration.GetConnectionString("sqlconnect")));
 
+
+builder.Services.AddCors(opt =>
+{
+    opt.AddPolicy(name: "Defualt", builder =>
+    {
+        builder.AllowAnyOrigin()
+            .AllowAnyHeader()
+            .AllowAnyMethod();
+    });
+});
+
 var app = builder.Build();
 
 // Configure the HTTP request pipeline.
@@ -34,7 +45,7 @@ app.UseStaticFiles(new StaticFileOptions
 app.UseHttpsRedirection();
 
 app.UseAuthorization();
-
+app.UseCors("Defualt");
 app.MapControllers();
 
 app.Run();
